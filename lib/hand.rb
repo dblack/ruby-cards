@@ -23,7 +23,7 @@ module PlayingCards
     TIE_BREAKERS = {
       "high card" => high_card_proc,
       "pair" => proc do |hand1, hand2|
-        comp = hand1.multiple_cards(2).first <=> hand2.multiple_cards(2).first
+        comp = hand1.compare_multiple_card(hand2, 2)
         comp.zero? ? hand1.compare_kickers(hand2) : comp
       end,
       "two pair" => proc do |hand1, hand2|
@@ -35,29 +35,18 @@ module PlayingCards
       "straight" => high_card_proc,
       "flush" => high_card_proc,
       "three of a kind" => proc do |hand1, hand2|
-        hand1.multiple_cards(3).first <=> hand2.multiple_cards(3).first
+        hand1.compare_multiple_card(hand2, 3)
       end,
       "full house" => proc do |hand1, hand2|
-        hand1.multiple_cards(3).first <=> hand2.multiple_cards(3).first
+        hand1.compare_multiple_card(hand2, 3)
       end,
       "four of a kind" => proc do |hand1, hand2|
-        hand1.multiple_cards(4).first <=> hand2.multiple_cards(4).first
+        hand1.compare_multiple_card(hand2, 4)
       end,
       "straight flush" => high_card_proc,
+      "royal straight flush" => proc { 0 }
     }
 
-    def kickers
-      multiple_cards(1).sort
-    end
-    
-    def compare_kickers(other)
-      kickers.each.with_index do |card, i|
-        comp = card <=> other.kickers[i]
-        return comp unless comp.zero?
-      end
-      return 0
-    end
-    
     def initialize(cards)
       @cards = cards
     end
@@ -71,6 +60,22 @@ module PlayingCards
       end
     end
 
+    def compare_multiple_card(other, n)
+      self.multiple_cards(n).first <=> other.multiple_cards(n).first
+    end
+
+    def kickers
+      multiple_cards(1).sort
+    end
+    
+    def compare_kickers(other)
+      kickers.each.with_index do |card, i|
+        comp = card <=> other.kickers[i]
+        return comp unless comp.zero?
+      end
+      return 0
+    end
+    
     def hand_name
       HANDS_IN_ORDER.each do |hand|
         send("is_#{hand.tr(' ', '_')}?") and return hand

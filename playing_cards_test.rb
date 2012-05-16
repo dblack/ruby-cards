@@ -273,6 +273,14 @@ class HandTest < MiniTest::Unit::TestCase
     assert(hand1.ties?(hand1))
   end
   
+  def test_ties_royal_straight_flush
+    hand1 = hand_from("10", "clubs", "J", "clubs", "Q", "clubs",
+                       "K", "clubs", "A", "clubs")
+    hand2 = hand_from("10", "hearts", "J", "hearts", "Q", "hearts",
+                      "K", "hearts", "A", "hearts")
+    assert(hand1.ties?(hand2))
+  end
+  
   def hand_from(*specs)
     PlayingCards::Hand.new(specs.each_slice(2).map {|r,s| PlayingCards::Card.new(r,s)})
   end
