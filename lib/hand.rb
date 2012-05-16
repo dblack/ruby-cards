@@ -26,24 +26,24 @@ module PlayingCards
         comp = hand1.multiple_cards(2).first <=> hand2.multiple_cards(2).first
         comp.zero? ? hand1.compare_kickers(hand2) : comp
       end,
-      "three of a kind" => proc do |hand1, hand2|
-        hand1.multiple_cards(3).first <=> hand2.multiple_cards(3).first
-      end,
       "two pair" => proc do |hand1, hand2|
         pairs1 = hand1.multiple_cards(2).sort
         pairs2 = hand2.multiple_cards(2).sort
         comp = pairs1.last <=> pairs2.last
         comp.zero? ? hand1.compare_kickers(hand2) : comp
       end,
+      "straight" => high_card_proc,
+      "flush" => high_card_proc,
+      "three of a kind" => proc do |hand1, hand2|
+        hand1.multiple_cards(3).first <=> hand2.multiple_cards(3).first
+      end,
+      "full house" => proc do |hand1, hand2|
+        hand1.multiple_cards(3).first <=> hand2.multiple_cards(3).first
+      end,
       "four of a kind" => proc do |hand1, hand2|
         hand1.multiple_cards(4).first <=> hand2.multiple_cards(4).first
       end,
-      "straight" => high_card_proc,
-      "flush" => high_card_proc,
       "straight flush" => high_card_proc,
-      "full house" => proc do |hand1, hand2|
-        hand1.multiple_cards(3).first <=> hand2.multiple_cards(3).first
-      end
     }
 
     def kickers
