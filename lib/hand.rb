@@ -77,38 +77,34 @@ module PlayingCards
     end
     
     def hand_name
-      HANDS_IN_ORDER.each do |hand|
-        send("is_#{hand.tr(' ', '_')}?") and return hand
-      end
-    end
-
-    def ties?(hand)
-      self == hand and TIE_BREAKERS[self.hand_name][self, hand] == 0
-    end
-    
-    def beats?(hand)
-      return false if self.ties?(hand)
-      if self == hand
-        case TIE_BREAKERS[self.hand_name][self, hand]
-        when -1 then false
-        when 1 then true
-        else raise "Can't determine winner"
-        end
-      else
-        self > hand
+      HANDS_IN_ORDER.each do |hand_name|
+        send("is_#{hand_name.tr(' ', '_')}?") and return hand_name
       end
     end
 
     def <=>(hand)
-      HANDS_IN_ORDER.index(hand.hand_name) <=> HANDS_IN_ORDER.index(self.hand_name)
+      order_comp = HANDS_IN_ORDER.index(hand.hand_name) <=> HANDS_IN_ORDER.index(self.hand_name)
+      if order_comp == 0
+        TIE_BREAKERS[self.hand_name][self, hand]
+      else
+        order_comp
+      end
     end
 
-    def histogram
+    def ties?(hand)
+      self == hand
+    end
+    
+    def beats?(hand)
+      self > hand
+    end
+
+    def distribution
       Hash.new(0).tap do |hist|
         @cards.each do |card|
           hist[card.rank] += 1
         end
-      end
+      end.values.sort
     end
 
     def is_royal_straight_flush?
@@ -116,31 +112,31 @@ module PlayingCards
     end
 
     def is_high_card?
-      !is_straight? && histogram.values.sort == [1,1,1,1,1]
+      !is_straight? && distribution == [1,1,1,1,1]
     end
 
     def is_pair?
-      histogram.values.sort == [1,1,1,2]
+      distribution == [1,1,1,2]
     end
 
     def is_two_pair?
-      histogram.values.sort == [1,2,2]
+      distribution == [1,2,2]
     end
 
     def is_three_of_a_kind?
-      histogram.values.sort == [1,1,3]
+      distribution == [1,1,3]
     end
 
     def is_full_house?
-      histogram.values.sort == [2,3]
+      distribution == [2,3]
     end
 
     def is_four_of_a_kind?
-      histogram.values.sort == [1,4]
+      distribution == [1,4]
     end
 
     def is_straight?
-      ranks = histogram.keys.sort_by {|c| Card::RANKS.index(c) }
+      ranks = cards.map(&:rank).uniq.sort_by {|c| Card::RANKS.index(c) }
       !is_pair? && Card::RANKS.index(ranks.last) - Card::RANKS.index(ranks.first) == 4
     end
 
